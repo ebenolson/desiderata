@@ -66,58 +66,65 @@ def calculate_hash(filename):
 
 def check_structure(rootdir, hashfile):
     logger.info('Checking directory structure')
-    with zipfs.ZipFS(hashfile, 'r') as hashfs:
+
+    encoding = sys.getfilesystemencoding()
+    with zipfs.ZipFS(hashfile, 'r', encoding=encoding) as hashfs:
         for root, dirs, files in os.walk(rootdir):
             for name in files:
-                filename = os.path.join(root,name)
+                filename = unicode(os.path.join(root,name), encoding=encoding)
                 logger.debug(filename)
                 if not hashfs.isfile(filename):
-                    logger.warn('Hash missing: {0}'.format(filename))
+                    logger.warn(u'Hash missing: {0}'.format(filename))
 
         for filename in hashfs.walkfiles(rootdir):
             logger.debug(filename)
             if not os.path.isfile(filename):
-                logger.error('File not found: {0}'.format(filename))
-    logger.info('Check complete')   
+                logger.error(u'File not found: {0}'.format(filename))
+    logger.info(u'Check complete')   
 
 def verify_hashes(rootdir, hashfile):
     logger.info('Verifying all hashes')
 
-    with zipfs.ZipFS(hashfile, 'r') as hashfs:
+    encoding = sys.getfilesystemencoding()
+    with zipfs.ZipFS(hashfile, 'r', encoding=encoding) as hashfs:
         for filename in hashfs.walkfiles(rootdir):
             logger.debug(filename)
             if not os.path.isfile(filename):
-                logger.error('File not found: {0}'.format(filename))
+                logger.error(u'File not found: {0}'.format(filename))
             elif hashfs.open(filename).read() != calculate_hash(filename):
-                logger.error('Hash verification error: {0}'.format(filename))
-    logger.info('Verification complete')   
+                logger.error(u'Hash verification error: {0}'.format(filename))
+    logger.info(u'Verification complete')   
 
 def record_hashes(rootdir, hashfile):
     logger.info('Recording all hashes')   
     if os.path.exists(hashfile):
-        logger.error("Output file already exists!")
+        logger.error(u'Output file already exists!')
         return
 
-    with zipfs.ZipFS(hashfile, 'w') as hashfs:
+    encoding = sys.getfilesystemencoding()
+    with zipfs.ZipFS(hashfile, 'w', encoding=encoding) as hashfs:
         hashfs.makedir(rootdir)
         for root, dirs, files in os.walk(rootdir):
             for dir in dirs:
                 hashfs.makedir(os.path.join(root, dir))
             for name in files:
-                filename = os.path.join(root,name)
+                filename = unicode(os.path.join(root,name), encoding=encoding)
                 logger.debug(filename)
                 with hashfs.open(filename,'w') as hashfile:
                     hashfile.write(calculate_hash(filename))
         hashfs.close()
-    logger.info('Recording complete')   
+    logger.info(u'Recording complete')   
 
 @plac.annotations(
     record=('Record hashes for all files', 'flag', 'r'), 
     check=('Check directory for missing or added files', 'flag', 'c'), 
     verify=('Verify hashes for all files', 'flag', 'v'),
+    debug=('Show all log output', 'flag', 'd'), 
     target='Target directory',    
     )
-def main(record, check, verify, target, outfile='hashes.zip'):
+def main(record, check, verify, debug, target, outfile='hashes.zip'):
+    if debug:
+        logger.setLevel(logging.DEBUG)
     if record:
         record_hashes(target, outfile)
     if check:
