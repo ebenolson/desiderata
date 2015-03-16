@@ -21,15 +21,15 @@ If you are familiar with a language besides Python, pull requests of your versio
 
 However, if you just want to run it:
 
-usage: desiderata.py [-h] [-r] [-c] [-v] [-d] target [outfile]
+    usage: desiderata.py [-h] [-r] [-c] [-v] [-d] target [outfile]
 
-positional arguments:
-  target        Target directory
-  outfile       [hashes.zip]
+    positional arguments:
+      target        Target directory
+      outfile       [hashes.zip]
 
-optional arguments:
-  -h, --help    show this help message and exit
-  -r, --record  Record hashes for all files
-  -c, --check   Check directory for missing or added files
-  -v, --verify  Verify hashes for all files
-  -d, --debug   Show all log output
+    optional arguments:
+      -h, --help    show this help message and exit
+      -r, --record  Record hashes for all files
+      -c, --check   Check directory for missing or added files
+      -v, --verify  Verify hashes for all files
+      -d, --debug   Show all log output
